@@ -1,133 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 
-namespace DijkstraAlgorithm
+namespace Dijsktra
 {
-    //Újra segítség nélkül
-    //Újra nehezítéssel
-    //Pl minimum 2-re lehet
-    class Program
+    public  class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
-            Graph g = new Graph(6);
-            g.AddEdge(0, 1, 3);
-            g.AddEdge(0, 2, 6);
-            g.AddEdge(1, 2, 6);
-            g.AddEdge(1, 3, 1);
-            g.AddEdge(2, 3, 1);
-            g.AddEdge(3, 4, 6);
-            g.AddEdge(4, 5, 9);
+            Console.WriteLine("Hello, World!");
 
-            g.Dijkstra(2);
+            Graph graph = new Graph(4);
+            graph.AddEdge(0, 1, 2);
+            graph.AddEdge(0, 2, 3);
+            graph.AddEdge(1, 2, 1);
+            graph.AddEdge(2, 3, 2);
+            graph.AddEdge(0, 3, 6);
+
+            int[] numbers = graph.Dijsktra(0);
+            PrintNumbers(numbers);
+
+
+        }
+
+        static void PrintNumbers(int[] numbers)
+        {
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                Console.Write(numbers[i] + " ");
+            }
+            Console.WriteLine();
         }
     }
-    class Graph
+
+    public class Graph
     {
-        private int Vertices;
-        private List<(int, int)>[] AdjList;
+        private int[,] edges;
+        private int vertices;
 
         public Graph(int vertices)
         {
-            Vertices = vertices;
-            AdjList = new List<(int, int)>[vertices];
+            this.vertices = vertices;
+            edges = new int[vertices, vertices];
+        }
+
+        public void AddEdge(int start, int end, int weight)
+        {
+            edges[start, end] = weight;
+            edges[end, start] = weight;
+        }
+
+        public int[] Dijsktra(int startingPoint)
+        {
+            int[] distances = new int[vertices];
             for (int i = 0; i < vertices; i++)
-                AdjList[i] = new List<(int, int)>();
-        }
-
-        public void AddEdge(int u, int v, int weight)
-        {
-            AdjList[u].Add((v, weight));
-            AdjList[v].Add((u, weight)); 
-        }
-
-        public void Dijkstra(int start)
-        {
-            int[] distances = new int[Vertices];
-            for (int i = 0; i < Vertices; i++)
-                distances[i] = int.MaxValue;
-            distances[start] = 0;
-
-            PriorityQueue<(int, int)> pq = new PriorityQueue<(int, int)>();
-            pq.Enqueue((0, start));
-
-            while (pq.Count > 0)
             {
-                var (currentDistance, u) = pq.Dequeue();
+                distances[i] = 100;
+            }
+            distances[startingPoint] = 0;
 
-                if (currentDistance > distances[u])
-                    continue;
+            Queue<int> queue = new Queue<int>();
+            queue.Enqueue(startingPoint);
 
-                foreach (var (v, weight) in AdjList[u])
+            while (queue.Count > 0)
+            {
+                int u = queue.Dequeue();
+                for (int i = 0; i < vertices; i++)
                 {
-                    int newDist = distances[u] + weight;
-                    if (newDist < distances[v])
+                    if (edges[u, i] != 0 && (distances[u] + edges[i,u]) < distances[i] )
                     {
-                        distances[v] = newDist;
-                        pq.Enqueue((newDist, v));
+                        distances[i] = distances[u] + edges[i, u];
+                        queue.Enqueue(i);
                     }
                 }
+
             }
 
-            PrintDistances(distances);
-        }
+            
+            return distances;
 
-        private void PrintDistances(int[] distances)
-        {
-            Console.WriteLine("Vertex   Distance from Source");
-            for (int i = 0; i < distances.Length; i++)
-                Console.WriteLine(i + "        " + distances[i]);
         }
     }
-
-    class PriorityQueue<T> where T : IComparable<T>
-    {
-        private List<T> heap = new List<T>();
-
-        public int Count => heap.Count;
-
-        public void Enqueue(T item)
-        {
-            heap.Add(item);
-            int i = heap.Count - 1;
-            while (i > 0 && heap[i].CompareTo(heap[(i - 1) / 2]) < 0)
-            {
-                (heap[i], heap[(i - 1) / 2]) = (heap[(i - 1) / 2], heap[i]);
-                i = (i - 1) / 2;
-            }
-        }
-
-        public T Dequeue()
-        {
-            T root = heap[0];
-            heap[0] = heap[^1];
-            heap.RemoveAt(heap.Count - 1);
-
-            int i = 0;
-            while (true)
-            {
-                int left = 2 * i + 1, right = 2 * i + 2, smallest = i;
-
-                if (left < heap.Count && heap[left].CompareTo(heap[smallest]) < 0)
-                {
-                    smallest = left;
-                }
-                if (right < heap.Count && heap[right].CompareTo(heap[smallest]) < 0)
-                {
-                    smallest = right;
-                }
-                if (smallest == i)
-                {
-                    break;
-                }
-
-                (heap[i], heap[smallest]) = (heap[smallest], heap[i]);
-                i = smallest;
-            }
-
-            return root;
-        }
-    }
-
 
 }
