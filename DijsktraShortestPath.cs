@@ -53,28 +53,32 @@ namespace Dijsktra
             int[] distances = new int[vertices];
             for (int i = 0; i < vertices; i++)
             {
-                distances[i] = 100;
+                distances[i] = int.MaxValue;
             }
             distances[startingPoint] = 0;
 
-            Queue<int> queue = new Queue<int>();
-            queue.Enqueue(startingPoint);
+            PriorityQueue<int, int> pq = new PriorityQueue<int, int>();
+            pq.Enqueue(startingPoint, 0);
 
-            while (queue.Count > 0)
+            while (pq.Count > 0)
             {
-                int u = queue.Dequeue();
-                for (int i = 0; i < vertices; i++)
+                int u = pq.Dequeue();
+
+                for (int v = 0; v < vertices; v++)
                 {
-                    if (edges[u, i] != 0 && (distances[u] + edges[i,u]) < distances[i] )
+                    if (edges[u, v] != 0) 
                     {
-                        distances[i] = distances[u] + edges[i, u];
-                        queue.Enqueue(i);
+                        int newDist = distances[u] + edges[u, v];
+                        if (newDist < distances[v])
+                        {
+                            distances[v] = newDist;
+                            pq.Enqueue(v, newDist);
+                        }
                     }
                 }
-
             }
 
-            
+
             return distances;
 
         }
